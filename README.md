@@ -1,5 +1,7 @@
 # Eventex
 
+[![Build Status](https://travis-ci.org/doulwyi/eventex.svg?branch=master)](https://travis-ci.org/doulwyi/eventex)
+
 Sistema de Eventos.
 
 ## Como desenvolver?
