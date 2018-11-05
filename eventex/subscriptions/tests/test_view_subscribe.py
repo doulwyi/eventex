@@ -1,4 +1,5 @@
 from django.core import mail
+from django.shortcuts import resolve_url as r
 from django.test import TestCase
 
 from eventex.subscriptions.forms import SubscriptionForm
@@ -7,7 +8,7 @@ from eventex.subscriptions.models import Subscription
 
 class SubscribeGet(TestCase):
     def setUp(self):
-        self.resp = self.client.get('/inscricao/')
+        self.resp = self.client.get(r('subscriptions:new'))
         self.form = self.resp.context['form']
 
     def test_get(self):
@@ -46,11 +47,11 @@ class SubscribePostValid(TestCase):
     def setUp(self):
         data = dict(name='Bruno Kanazawa', cpf='12345678901',
                     email='kanazawabruno@gmail.com', phone='19-99245-2648')
-        self.resp = self.client.post('/inscricao/', data)
+        self.resp = self.client.post(r('subscriptions:new'), data)
 
     def test_post(self):
-        """Valid POST should redirect to /inscricao/."""
-        self.assertEqual(302, self.resp.status_code)
+        """Valid POST should redirect to /inscricao/1/."""
+        self.assertRedirects(self.resp, '/inscricao/1/')
 
     def test_send_subscribe_email(self):
         """"""
@@ -62,10 +63,10 @@ class SubscribePostValid(TestCase):
 
 class SubscribePostInvalid(TestCase):
     def setUp(self):
-        self.resp = self.client.post('/inscricao/', {})
+        self.resp = self.client.post(r('subscriptions:new'), {})
 
     def test_post(self):
-        """Invalid POST shloud not redirect."""
+        """Invalid POST should not redirect."""
         self.assertEqual(200, self.resp.status_code)
 
     def test_template(self):
@@ -84,13 +85,3 @@ class SubscribePostInvalid(TestCase):
 
     def test_dont_save_subscription(self):
         self.assertFalse(Subscription.objects.exists())
-
-
-class SubscribeSuccessMessage(TestCase):
-    def setUp(self):
-        data = dict(name='Bruno Kanazawa', cpf='12345678901',
-                    email='kanazawabruno@gmail.com', phone='19-99245-2648')
-        self.resp = self.client.post('/inscricao/', data, follow=True)
-
-    def test_message(self):
-        self.assertContains(self.resp, 'Inscrição realizada com sucesso!')
