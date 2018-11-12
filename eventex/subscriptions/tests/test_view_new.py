@@ -6,7 +6,7 @@ from eventex.subscriptions.forms import SubscriptionForm
 from eventex.subscriptions.models import Subscription
 
 
-class SubscribeGet(TestCase):
+class SubscriptionsNewGet(TestCase):
     def setUp(self):
         self.resp = self.client.get(r('subscriptions:new'))
         self.form = self.resp.context['form']
@@ -42,7 +42,7 @@ class SubscribeGet(TestCase):
         self.assertIsInstance(self.form, SubscriptionForm)
 
 
-class SubscribePostValid(TestCase):
+class SubscriptionsNewPostValid(TestCase):
 
     def setUp(self):
         data = dict(name='Bruno Kanazawa', cpf='12345678901',
@@ -51,7 +51,7 @@ class SubscribePostValid(TestCase):
 
     def test_post(self):
         """Valid POST should redirect to /inscricao/1/."""
-        self.assertRedirects(self.resp, '/inscricao/1/')
+        self.assertRedirects(self.resp, r('subscriptions:detail', 1))
 
     def test_send_subscribe_email(self):
         """"""
@@ -61,7 +61,7 @@ class SubscribePostValid(TestCase):
         self.assertTrue(Subscription.objects.exists())
 
 
-class SubscribePostInvalid(TestCase):
+class SubscriptionsNewPostInvalid(TestCase):
     def setUp(self):
         self.resp = self.client.post(r('subscriptions:new'), {})
 
@@ -85,3 +85,11 @@ class SubscribePostInvalid(TestCase):
 
     def test_dont_save_subscription(self):
         self.assertFalse(Subscription.objects.exists())
+
+
+class TemplateRegressionTest(TestCase):
+    def test_template_has_no_field_errors(self):
+        invalid_data = dict(name='Bruno Kanazawa', cpf='12345678901')
+        response = self.client.post(r('subscriptions:new'), invalid_data)
+
+        self.assertContains(response, '<ul class="errorlist nonfield"')

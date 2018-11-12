@@ -1,11 +1,10 @@
 from django.urls import path
 
-from eventex.subscriptions.views import subscribe, detail
-
+from eventex.subscriptions.views import new, detail
 
 app_name = 'subscriptions'
 
 urlpatterns = [
-    path('inscricao/', subscribe, name='new'),
-    path('inscricao/<int:pk>/', detail),
+    path('', new, name='new'),
+    path('<int:pk>/', detail, name='detail'),
 ]
