@@ -1,23 +1,23 @@
 from django.shortcuts import resolve_url as r
 from django.test import TestCase
 
-from eventex.core.models import Talk, Speaker
+from eventex.core.models import Talk, Speaker, Course
 
 
 class TalkListGet(TestCase):
 
     def setUp(self):
-        t1 = Talk.objects.create(title='Título da Palestra', start='10:00',
-                            description='Descrição da palestra.')
-        t2 = Talk.objects.create(title='Título da Palestra', start='13:00',
-                            description='Descrição da palestra.')
+        t1 = Talk.objects.create(title='Título da Palestra', start='10:00', description='Descrição da palestra.')
+        t2 = Talk.objects.create(title='Título da Palestra', start='13:00', description='Descrição da palestra.')
 
-        speaker = Speaker.objects.create(name='Bruno Kanazawa',
-                                         slug='bruno-kanazawa',
+        c1 = Course.objects.create(title='Título do curso', start='09:00', description='Descrição do curso.', slots=20)
+
+        speaker = Speaker.objects.create(name='Bruno Kanazawa', slug='bruno-kanazawa',
                                          website='https://github.com/doulwyi/')
 
         t1.speakers.add(speaker)
         t2.speakers.add(speaker)
+        c1.speakers.add(speaker)
         self.resp = self.client.get(r('talk_list'))
 
     def test_get(self):
@@ -31,9 +31,12 @@ class TalkListGet(TestCase):
             (2, 'Título da Palestra'),
             (1, '10:00'),
             (1, '13:00'),
-            (2, '/palestrantes/bruno-kanazawa'),
-            (2, 'Bruno Kanazawa'),
-            (2, 'Descrição da palestra.')
+            (3, '/palestrantes/bruno-kanazawa'),
+            (3, 'Bruno Kanazawa'),
+            (2, 'Descrição da palestra.'),
+            (1, 'Título do curso'),
+            (1, '09:00'),
+            (1, 'Descrição do curso.')
         ]
 
         for count, expected in contents:
@@ -41,13 +44,11 @@ class TalkListGet(TestCase):
                 self.assertContains(self.resp, expected, count)
 
     def test_context(self):
-        variables = ['morning_talks', 'afternoon_talks']
+        variables = ['morning_talks', 'afternoon_talks', 'courses']
 
         for key in variables:
             with self.subTest():
                 self.assertIn(key, self.resp.context)
-
-
 
 
 class TalkListGetEmpty(TestCase):
